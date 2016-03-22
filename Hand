@@ -36,7 +36,7 @@ public class Hand {
 	 * AE: 6 > diceNumber > 0, 
 	 */
 	
-	public void throwHand(boolean[] valitut){ //heittää uudestaan annetun nopan
+	public void throwHand(boolean[] valitut){ //heittää uudestaan valitut nopat
 		for (int i=0;i<dices.size(); i++) {	
 			if (!valitut[i]) {
 				dices.get(i).throwDice();
@@ -58,6 +58,11 @@ public class Hand {
 			sum = sum + dices.get(i).getValue();
 		}
 		return sum;
+	}
+	public void resetHand() { //nollaa kaikki nopat, käytetään vuorojen välissä
+		for (int i = 0; i<dices.size(); i++){
+			dices.get(i).resetDice();
+		}
 	}
 
 	
