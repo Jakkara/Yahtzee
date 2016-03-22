@@ -16,4 +16,7 @@ public class Dice{
 	public int getValue(){
 		return value;
 	}
+	public void resetDice(){
+		value = 0;
+	}
 }
