@@ -1,21 +1,15 @@
 import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JRadioButton;
-import java.awt.FlowLayout;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.awt.Image;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -27,24 +21,10 @@ import javax.swing.JComponent;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import java.util.Random;
-import javax.swing.JToolBar;
+import java.util.ArrayList;
 import javax.swing.JMenuBar;
 import javax.swing.UIManager;
-import javax.swing.table.AbstractTableModel;
-
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormSpecs;
-import com.jgoodies.forms.layout.RowSpec;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import javax.swing.SpringLayout;
-import java.awt.List;
 import javax.swing.JTable;
-import java.awt.Button;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.JScrollPane;
@@ -76,15 +56,15 @@ public class guidemo {
 			"Pelaaja 2"
 			};
 
-	Object[][] data = {
+	Object[][] data = { //tallennetaan pelaajien pisteet matriisiin, joka sisältää eri pelaajien pisteet eri sarakkeissa
 			{"Ykköset", 	null, null},
 			{"Kakkoset", 	null, null},
 			{"Kolmoset", 	null, null},
 			{"Neloset", 	null, null},
 			{"Vitoset", 	null, null},
 			{"Kutoset", 	null, null},
-			{"Bonus:", 	null, null},
-			{"Pari", 	null, null},
+			{"Bonus:", 		null, null},
+			{"Pari", 		null, null},
 			{"Kaksi paria", null, null},
 			{"Kolme samaa", null, null},
 			{"Neljä samaa", null, null},
@@ -92,7 +72,7 @@ public class guidemo {
 			{"Suora 2-6", 	null, null},
 			{"Täyskäsi", 	null, null},
 			{"Sattuma", 	null, null},
-			{"Yatzy",	null, null},
+			{"Yatzy",		null, null},
 			{"Yhteensä", 	null, null}
 	};
 	private JMenuBar menuBar;
@@ -266,7 +246,7 @@ public class guidemo {
 			  public void mouseClicked(MouseEvent e) {
 				  JTable target = (JTable)e.getSource();
 			      int row = target.getSelectedRow();
-			      int column = target.getSelectedColumn();
+			      int column = 0;
 			      
 			      // Mikäli rivi ei ole tyhjä, tulee varoitus ja pelaaja saa sijoittaa pisteensä uudelleen.
 			      if (data[row][column+player] == null) {
@@ -362,6 +342,7 @@ public class guidemo {
 			    	  
 			    	  
 			    	  //Nollataan seuraavaa heittäjää varten muuttujat:
+			    	  hand.resetHand();
 			    	  target.updateUI();
 				      playerSwitch();
 				      lblKtesi.setText("Vuorossa pelaaja " + player);
@@ -489,7 +470,7 @@ public class guidemo {
 
 
 	
-class ImagePanel extends JComponent {
+class ImagePanel extends JComponent{
 	private Image image;
     public ImagePanel(Image image) {
         this.image = image;
@@ -499,7 +480,6 @@ class ImagePanel extends JComponent {
         super.paintComponent(g);
         g.drawImage(image, 0, 0, this);
     }
-}	
 
 //*********************
 //* TALLENNUS JA LATAUS
@@ -513,17 +493,17 @@ class ImagePanel extends JComponent {
  * Tallentaa pistelistan tekstitiedostoon muodossa *,*,*,*,...
  */
 public void saveScores(Object[][] data) throws IOException{
-	ArrayList<Integer> p1points = new ArrayList<Integer>(); //siirretään pisteet käsittelyä varten matriisista listaan
+	ArrayList<Integer> p1points = new ArrayList<Integer>(); //siirretään pisteet käsittelyä varten matriisista listoihin
 	ArrayList<Integer> p2points = new ArrayList<Integer>();
 	for (int i = 0; i < 15; i++){
 		p1points.add((Integer) data[i][1]);
 		p2points.add((Integer) data[i][2]);
 	}
 	
-	String p1sheet = "C:/Users/Public/Documents/sheet1.txt"; //osoitetaan tallennusolio kohti oikeaa tiedostoa
-	String p2sheet = "C:/Users/Public/Documents/sheet2.txt";
+	String p1sheet = "src/sheet1.txt"; //osoitetaan tallennusolio kohti oikeaa tiedostoa, tallennetaan src-kansioon txt-muodossa
+	String p2sheet = "src/sheet2.txt";
 	
-	Save manager1 = new Save(p1sheet); //molempia pelaajia vastaa oma tallennusolio
+	Save manager1 = new Save(p1sheet); //molempia pelaajia edustaa oma tallennusolio
 	Save manager2 = new Save(p2sheet);
 	
 	manager1.writeToFile(p1points); //kutsutaan tallennusmetodia molemmille pelaajille
@@ -532,18 +512,18 @@ public void saveScores(Object[][] data) throws IOException{
 
 
 /**
- * @param data 3*15 matriisi joka sisältää tulokset muotoa mjono, p1-piste, p2-piste
+ * @param data 3*15 matriisi joka sisältää tulokset sarakkeissa järjestyksessä mjono, p1-piste, p2-piste
  * @throws FileNotFoundException 
  */
 /**
- * @param data matriisi pelaajien pisteistä. 3*15, jossa rivin ensimmäinen on kuvaus pisteestä, toinen ja kolmas ovat pelaajien pisteet
+ * @param data Matriisi pelaajien pisteistä. 3*15, jossa ensimmäinen sarake kertoo pisteen tyypin, toinen ja kolmas ovat pelaajien pisteet
  * @throws FileNotFoundException
  */
 public void loadScores(Object[][] data) throws FileNotFoundException{
 	ArrayList<Integer> p1points = new ArrayList<Integer>();
 	ArrayList<Integer> p2points = new ArrayList<Integer>();
-	String p1sheet = "C:/Users/Public/Documents/sheet1.txt";
-	String p2sheet = "C:/Users/Public/Documents/sheet2.txt";
+	String p1sheet = "src/sheet1.txt";
+	String p2sheet = "src/sheet2.txt";
 	Save manager1 = new Save(p1sheet);
 	Save manager2 = new Save(p2sheet);
 	p1points = manager1.readFromFile(p1sheet);
@@ -553,73 +533,4 @@ public void loadScores(Object[][] data) throws FileNotFoundException{
 		data[i][2] = p2points.get(i);
 		}
 	}
-Status API Training Shop Blog About Pricing
-© 2016 GitHub, Inc. Terms Privacy Security Contact Help
-
-
-
-	
-class ImagePanel extends JComponent {
-	private Image image;
-    public ImagePanel(Image image) {
-        this.image = image;
-    }
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(image, 0, 0, this);
-    }
-}	
-
-//*********************
-//* TALLENNUS JA LATAUS
-//*********************
-
-/**
- * @param p1points Pelaajan pisteet arraylistana
- * @param p2points -||-
- * @throws IOException
- * @author J
- * Tallentaa pistelistan tekstitiedostoon muodossa *,*,*,*,...
- */
-public void saveScores(Object[][] data) throws IOException{
-	ArrayList<Integer> p1points = new ArrayList<Integer>(); //siirretään pisteet käsittelyä varten matriisista listaan
-	ArrayList<Integer> p2points = new ArrayList<Integer>();
-	for (int i = 0; i < 15; i++){
-		p1points.add((Integer) data[i][1]);
-		p2points.add((Integer) data[i][2]);
-	}
-	
-	String p1sheet = "C:/Users/Public/Documents/sheet1.txt"; //osoitetaan tallennusolio kohti oikeaa tiedostoa
-	String p2sheet = "C:/Users/Public/Documents/sheet2.txt";
-	
-	Save manager1 = new Save(p1sheet); //molempia pelaajia vastaa oma tallennusolio
-	Save manager2 = new Save(p2sheet);
-	
-	manager1.writeToFile(p1points); //kutsutaan tallennusmetodia molemmille pelaajille
-	manager2.writeToFile(p2points);
 }
-
-
-/**
- * @param data 3*15 matriisi joka sisältää tulokset muotoa mjono, p1-piste, p2-piste
- * @throws FileNotFoundException 
- */
-/**
- * @param data matriisi pelaajien pisteistä. 3*15, jossa rivin ensimmäinen on kuvaus pisteestä, toinen ja kolmas ovat pelaajien pisteet
- * @throws FileNotFoundException
- */
-public void loadScores(Object[][] data) throws FileNotFoundException{
-	ArrayList<Integer> p1points = new ArrayList<Integer>();
-	ArrayList<Integer> p2points = new ArrayList<Integer>();
-	String p1sheet = "C:/Users/Public/Documents/sheet1.txt";
-	String p2sheet = "C:/Users/Public/Documents/sheet2.txt";
-	Save manager1 = new Save(p1sheet);
-	Save manager2 = new Save(p2sheet);
-	p1points = manager1.readFromFile(p1sheet);
-	p2points = manager2.readFromFile(p2sheet);
-	for (int i = 0; i < 15; i++){
-		data[i][1] = p1points.get(i);
-		data[i][2] = p2points.get(i);
-		}
-	}
